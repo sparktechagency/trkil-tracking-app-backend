@@ -51,7 +51,7 @@ const createOrderToDB = async (payload: IOrder) => {
 
         // Create Stripe checkout session (outside Mongo transaction)
         const checkoutSession = await stripe.checkout.sessions.create({
-            payment_method_types: ['card'],
+            payment_method_types: ['card', ],
             line_items,
             mode: 'payment',
             success_url: `http://10.0.80.75:5000/order/success`,
@@ -61,6 +61,7 @@ const createOrderToDB = async (payload: IOrder) => {
         return checkoutSession.url;
 
     } catch (error) {
+        console.log(error)
         await session.abortTransaction();
         session.endSession();
         throw new ApiError(StatusCodes.BAD_REQUEST, error instanceof Error ? error.message : 'Order creation failed');
@@ -72,12 +73,18 @@ const createOrderToDB = async (payload: IOrder) => {
 const retrievedOrdersFromDB = async (user: JwtPayload, query: Record<string, any>): Promise<{ orders: IOrder[], pagination: any }> => {
 
     const result = new QueryBuilder(
-        Order.find({user: user?.id}),
+        Order.find({ user: user?.id }),
         query
     ).paginate();
 
-    const [orders, pagination ] = await Promise.all([
-        result.queryModel.populate('product', "name images quantity").lean().exec(),
+    const [orders, pagination] = await Promise.all([
+        result.queryModel.populate({
+            path: "product",
+            populate: {
+                path: "category",
+                select: "name"
+            }
+        }).lean().exec(),
         result.getPaginationInfo()
     ]);
 

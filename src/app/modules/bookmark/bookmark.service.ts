@@ -5,6 +5,7 @@ import { Bookmark } from "./bookmark.model";
 import { JwtPayload } from "jsonwebtoken";
 import { FilterQuery } from "mongoose";
 import QueryBuilder from "../../../helpers/QueryBuilder";
+import { populate } from "dotenv";
 
 const toggleBookmark = async (payload: IBookmark): Promise<string> => {
 
@@ -27,7 +28,7 @@ const toggleBookmark = async (payload: IBookmark): Promise<string> => {
 };
 
 
-const getBookmark = async (user: JwtPayload, query: FilterQuery<any>): Promise<{bookmarks:IBookmark[], pagination:any}> => {
+const getBookmark = async (user: JwtPayload, query: FilterQuery<any>): Promise<{ bookmarks: IBookmark[], pagination: any }> => {
 
     const bookmarksQuery = new QueryBuilder(
         Bookmark.find({ user: user?.id }),
@@ -35,11 +36,21 @@ const getBookmark = async (user: JwtPayload, query: FilterQuery<any>): Promise<{
     ).paginate();
 
     const [bookmarks, pagination] = await Promise.all([
-        bookmarksQuery.queryModel.populate("product").select("product").lean().exec(),
-        bookmarksQuery.getPaginationInfo()
+        bookmarksQuery.queryModel
+            .populate({
+                path: "product",
+                populate: {
+                    path: "category",
+                    select: "name"
+                },
+            })
+            .lean()
+            .exec(),
+        bookmarksQuery.getPaginationInfo(),
     ]);
 
-    return {  bookmarks, pagination }
+
+    return { bookmarks, pagination }
 
 }
 
