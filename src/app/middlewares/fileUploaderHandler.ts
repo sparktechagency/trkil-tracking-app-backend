@@ -74,7 +74,7 @@ const fileUploadHandler = () => {
     };
 
     const upload = multer({ storage: storage, fileFilter: filterFilter })
-        .fields([{ name: 'image', maxCount: 3 }]);
+        .fields([{ name: 'image', maxCount: 4 }]);
     return upload;
 
 };
