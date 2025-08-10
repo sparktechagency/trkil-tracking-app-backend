@@ -14,7 +14,6 @@ const createOrderToDB = async (payload: IOrder) => {
     session.startTransaction();
 
     try {
-
         // Create order within session
         const createdOrder = await Order.create([payload], { session });
         if (!createdOrder || createdOrder.length === 0) {
@@ -29,8 +28,11 @@ const createOrderToDB = async (payload: IOrder) => {
         const line_items = [
             {
                 price_data: {
+                    product_data: {
+                        name: 'Some product name',
+                    },
                     currency: 'usd',
-                    unit_amount: Math.ceil(payload.price * 100), // Stripe expects amount in cents
+                    unit_amount: Math.ceil(payload.price * 100),
                 },
                 quantity: 1,
             },
@@ -38,7 +40,7 @@ const createOrderToDB = async (payload: IOrder) => {
 
         // Create Stripe checkout session (outside Mongo transaction)
         const checkoutSession = await stripe.checkout.sessions.create({
-            payment_method_types: ['card',],
+            payment_method_types: ['card'],
             line_items,
             mode: 'payment',
             billing_address_collection: 'required',
@@ -52,12 +54,14 @@ const createOrderToDB = async (payload: IOrder) => {
         return checkoutSession.url;
 
     } catch (error) {
-        console.log(error)
-        await session.abortTransaction();
+        if (session.inTransaction()) {
+            await session.abortTransaction();
+        }
         session.endSession();
         throw new ApiError(StatusCodes.BAD_REQUEST, error instanceof Error ? error.message : 'Order creation failed');
     }
 };
+
 
 
 

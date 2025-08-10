@@ -15,16 +15,15 @@ router.route("/")
     .post(
         auth(USER_ROLES.USER),
         async (req: Request, res: Response, next: NextFunction) => {
-            const { delivery_charge, price, ...otherPayload } = req.body;
-            const txid = generateTxid();
-
-
-            const cart = await Cart.find({ user: req.user.id });
+            
             try {
 
+                const { delivery_charge, price, ...otherPayload } = req.body;
+                const txid = generateTxid();
 
-                console.log("Cart Items:", cart);
 
+                const cart = await Cart.find({ user: req.user.id });
+                
                 if (!cart || cart.length === 0) {
                     throw new ApiError(StatusCodes.BAD_REQUEST, "No cart found for this user");
                 }
@@ -42,8 +41,7 @@ router.route("/")
                     price: Number(delivery_charge) + Number(price),
                     delivery_charge: Number(delivery_charge),
                 };
-                console.log("Order Request Body:", req.body);
-                // next();
+                next();
 
             } catch (error) {
                 console.log(error)
