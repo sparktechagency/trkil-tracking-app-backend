@@ -12,6 +12,7 @@ import { CategoryRoutes } from '../modules/category/category.route';
 import { OrderRoutes } from '../modules/order/order.routes';
 import { ProductRoutes } from '../modules/product/product.routes';
 import { DeviceRoutes } from '../modules/device/device.route';
+import { CartRoutes } from '../modules/cart/cart.routes';
 const router = express.Router();
 
 const apiRoutes = [
@@ -28,6 +29,7 @@ const apiRoutes = [
     { path: "/product", route: ProductRoutes },
     { path: "/order", route: OrderRoutes },
     { path: "/device", route: DeviceRoutes },
+    { path: "/cart", route: CartRoutes },
 ]
 
 apiRoutes.forEach(route => router.use(route.path, route.route));

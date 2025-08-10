@@ -7,8 +7,6 @@ import { Order } from "./order.model";
 import QueryBuilder from "../../../helpers/QueryBuilder";
 import { checkMongooseIDValidation } from "../../../shared/checkMongooseIDValidation";
 import stripe from "../../../config/stripe";
-import { Product } from "../product/product.model";
-import { IProduct } from "../product/product.interface";
 
 
 const createOrderToDB = async (payload: IOrder) => {
@@ -16,14 +14,6 @@ const createOrderToDB = async (payload: IOrder) => {
     session.startTransaction();
 
     try {
-        // Validate product
-        const isValidProduct: IProduct | null = await Product.findById(payload.product).session(session);
-        if (!isValidProduct) {
-            throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid Product');
-        }
-
-        const totalPrice = ((Number(isValidProduct.price) * Number(payload.quantity)) + payload.delivery_charge);
-        payload.price = totalPrice;
 
         // Create order within session
         const createdOrder = await Order.create([payload], { session });
@@ -40,10 +30,7 @@ const createOrderToDB = async (payload: IOrder) => {
             {
                 price_data: {
                     currency: 'usd',
-                    product_data: {
-                        name: isValidProduct.name,
-                    },
-                    unit_amount: Math.ceil(totalPrice * 100), // Stripe expects amount in cents
+                    unit_amount: Math.ceil(payload.price * 100), // Stripe expects amount in cents
                 },
                 quantity: 1,
             },
@@ -51,9 +38,13 @@ const createOrderToDB = async (payload: IOrder) => {
 
         // Create Stripe checkout session (outside Mongo transaction)
         const checkoutSession = await stripe.checkout.sessions.create({
-            payment_method_types: ['card', ],
+            payment_method_types: ['card',],
             line_items,
             mode: 'payment',
+            billing_address_collection: 'required',
+            shipping_address_collection: {
+                allowed_countries: ['US', 'CA'],
+            },
             success_url: `http://10.0.80.75:5000/order/success`,
             cancel_url: `http://10.0.80.75:5000/order/cancel`,
         });
