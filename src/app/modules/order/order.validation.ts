@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { checkValidID } from "../../../shared/checkValidID";
 
 export const orderZodValidationSchema = z.object({
     body: z.object({
@@ -19,17 +18,15 @@ export const orderZodValidationSchema = z.object({
         }).nonempty("Address must be provided"),
 
         notes: z.string().optional(),
-
-        product: checkValidID("Product ID is invalid"),
+        
         delivery_charge: z.number({
             required_error: "Delivery Charge is required",
             invalid_type_error: "Delivery Charge must be a number"
         }),
-
-        quantity: z.number({
-            required_error: "Quantity is required",
-            invalid_type_error: "Quantity must be a number"
-        }).nonnegative("Quantity must be a non-negative number"),
+        price: z.number({
+            required_error: "Price is required",
+            invalid_type_error: "Price must be a number"
+        }).nonnegative("Price must be a non-negative number"),
 
         txid: z.string({
             required_error: "Transaction ID is required",

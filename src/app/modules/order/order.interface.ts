@@ -1,15 +1,19 @@
 import { Model, Types } from "mongoose";
 
-export type IOrder = {
+export type Item = {
     _id?: Types.ObjectId;
+    product: Types.ObjectId;
+    quantity: number;
+}
+
+export type IOrder = {
     txid: string;
     email: string;
     contact: string;
     address: string;
     notes?: string;
     user: Types.ObjectId;
-    product: Types.ObjectId;
-    quantity: number;
+    items: [Item];
     delivery_charge: number;
     price: number;
     status: "pending" | "processing" | "OnWay" | "completed" | "cancelled";

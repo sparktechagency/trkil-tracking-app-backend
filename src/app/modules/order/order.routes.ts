@@ -6,25 +6,47 @@ import validateRequest from "../../middlewares/validateRequest";
 import { JwtPayload } from "jsonwebtoken";
 import { generateTxid } from "../../../util/generateTxid";
 import { orderZodValidationSchema } from "./order.validation";
+import { Cart } from "../cart/cart.model";
+import ApiError from "../../../errors/ApiErrors";
+import { StatusCodes } from "http-status-codes";
 const router = express.Router();
 
 router.route("/")
     .post(
         auth(USER_ROLES.USER),
         async (req: Request, res: Response, next: NextFunction) => {
+            const { delivery_charge, price, ...otherPayload } = req.body;
+            const txid = generateTxid();
+
+
+            const cart = await Cart.find({ user: req.user.id });
             try {
-                const { quantity, delivery_charge, ...otherPayload } = req.body;
-                const txid = generateTxid();
+
+
+                console.log("Cart Items:", cart);
+
+                if (!cart || cart.length === 0) {
+                    throw new ApiError(StatusCodes.BAD_REQUEST, "No cart found for this user");
+                }
+
+                const items = Array.isArray(cart) && cart?.map(item => ({
+                    product: item.product,
+                    quantity: item.quantity
+                }));
+
                 req.body = {
                     ...otherPayload,
-                    user: (req.user as JwtPayload).id,
+                    user: req.user.id,
                     txid,
-                    quantity: Number(quantity),
+                    items,
+                    price: Number(delivery_charge) + Number(price),
                     delivery_charge: Number(delivery_charge),
                 };
-                next();
+                console.log("Order Request Body:", req.body);
+                // next();
 
             } catch (error) {
+                console.log(error)
                 res.status(500).json({ message: "Failed to Make Order" });
             }
         },
