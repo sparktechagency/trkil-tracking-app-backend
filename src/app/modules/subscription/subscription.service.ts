@@ -32,16 +32,25 @@ const subscriptionDetailsFromDB = async (user: JwtPayload): Promise<ISubscriptio
 const cancelSubscriptionFromDB = async (id: string): Promise<IUser> => {
 
     const unSubscribe = await User.findByIdAndUpdate(
-        {_id: id},
-        {$set: {isSubscribed : false}},
-        {new : true}
-    )
+        id,
+        { $set: { isSubscribed: false } },
+        { new: true }
+    );
 
-    await Subscription.findOneAndUpdate({user: id}, {status : "cancel"}, {new: true})
-
-    if(!unSubscribe){
-        throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to do")
+    if (!unSubscribe) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to update user");
     }
+
+    const subscriptionUpdate = await Subscription.findOneAndUpdate(
+        { user: id },
+        { status: "cancel" },
+        { new: true }
+    );
+
+    if (!subscriptionUpdate) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to update subscription");
+    }
+
     return unSubscribe;
 };
 
