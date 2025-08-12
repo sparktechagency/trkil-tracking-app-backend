@@ -16,7 +16,7 @@ router.get("/my-plan",
 );
 
 router.patch("/:id",
-     SubscriptionController.cancelSubscription
+    SubscriptionController.cancelSubscription
 );
 
 export const SubscriptionRoutes = router;
