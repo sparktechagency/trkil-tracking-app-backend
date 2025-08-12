@@ -22,6 +22,7 @@ const itemSchema = new Schema<Item>(
 const orderSchema = new Schema<IOrder, OrderModel>(
     {
         email: { type: String, required: true },
+        name : { type: String, required: true},
         contact: { type: String, required: true },
         address: { type: String, required: true },
         notes: { type: String, required: false },

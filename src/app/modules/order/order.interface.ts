@@ -8,6 +8,7 @@ export type Item = {
 
 export type IOrder = {
     txid: string;
+    name: string;
     email: string;
     contact: string;
     address: string;

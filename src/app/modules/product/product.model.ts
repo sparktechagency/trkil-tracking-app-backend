@@ -31,6 +31,8 @@ const productSchema = new Schema<IProduct, ProductModel>(
     }
 );
 
+productSchema.index({category : 1})
+
 productSchema.methods.toJSON = function () {
     const obj = this.toObject();
     obj.images = obj.images.map((image: string) =>

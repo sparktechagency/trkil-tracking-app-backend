@@ -13,13 +13,15 @@ router.route("/")
         PlanController.createPlan
     )
     .get(
-        auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.USER),
         PlanController.getPlan
-    )
+    );
 
-router
-    .route("/:id")
-    .patch(auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN), PlanController.updatePlan)
-    .delete(auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN), PlanController.deletePlan)
+router.route("/:id")
+    .patch(
+        auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN), PlanController.updatePlan
+    )
+    .delete(
+        auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN), PlanController.deletePlan
+    )
 
 export const PlanRoutes = router;

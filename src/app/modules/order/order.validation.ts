@@ -2,6 +2,11 @@ import { z } from "zod";
 
 export const orderZodValidationSchema = z.object({
     body: z.object({
+        name: z.string({
+            required_error: "Name is required",
+            invalid_type_error: "Name must be a string"
+        }).nonempty("Name must be provided"),
+        
         email: z.string({
             required_error: "Email is required",
             invalid_type_error: "Email must be a string"

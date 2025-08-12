@@ -51,7 +51,7 @@ const loginUserFromDB = async (payload: ILoginData) => {
         config.jwt.jwtRefreshExpiresIn as string
     );
 
-    return { accessToken, isSubscribed: isExistUser?.isSubscribed, refreshToken };
+    return { accessToken, refreshToken };
 };
 
 //forget password
@@ -110,7 +110,23 @@ const verifyEmailToDB = async (payload: IVerifyEmail) => {
             { _id: isExistUser._id },
             { verified: true, authentication: { oneTimeCode: null, expireAt: null } }
         );
+
+         //create token
+        const accessToken = jwtHelper.createToken(
+            { id: isExistUser._id, role: isExistUser.role, email: isExistUser.email },
+            config.jwt.jwt_secret as Secret,
+            config.jwt.jwt_expire_in as string
+        );
+
+        //create token
+        const refreshToken = jwtHelper.createToken(
+            { id: isExistUser._id, role: isExistUser.role, email: isExistUser.email },
+            config.jwt.jwtRefreshSecret as Secret,
+            config.jwt.jwtRefreshExpiresIn as string
+        );
+
         message = 'Email verify successfully';
+        data = { accessToken,  refreshToken}
     } else {
         await User.findOneAndUpdate(
             { _id: isExistUser._id },
@@ -271,7 +287,7 @@ const socialLoginFromDB = async (payload: IUser) => {
             config.jwt.jwtRefreshExpiresIn as string
         );
 
-        return { accessToken, isRegister: false, isSubscribed: isExistUser?.isSubscribed, refreshToken };
+        return { accessToken, isRegister: false, refreshToken };
 
     } else {
 
@@ -294,7 +310,7 @@ const socialLoginFromDB = async (payload: IUser) => {
             config.jwt.jwtRefreshExpiresIn as string
         );
 
-        return { accessToken, isRegister: true, isSubscribed: false, refreshToken };
+        return { accessToken, isRegister: true, refreshToken };
     }
 }
 
