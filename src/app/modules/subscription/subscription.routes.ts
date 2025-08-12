@@ -8,15 +8,15 @@ router.route("/")
     .get(
         auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN), 
         SubscriptionController.subscriptions
-    )
-    .patch(
-        auth(USER_ROLES.USER), 
-        SubscriptionController.cancelSubscription
-    )
+    );
 
 router.get("/my-plan", 
     auth(USER_ROLES.USER), 
     SubscriptionController.subscriptionDetails
+);
+
+router.patch("/:id",
+     SubscriptionController.cancelSubscription
 );
 
 export const SubscriptionRoutes = router;

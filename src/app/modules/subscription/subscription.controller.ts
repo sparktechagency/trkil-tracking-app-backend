@@ -28,7 +28,7 @@ const subscriptionDetails = catchAsync( async(req: Request, res: Response)=>{
 });
 
 const cancelSubscription = catchAsync( async(req: Request, res: Response)=>{
-    const result = await SubscriptionService.cancelSubscriptionFromDB(req.user as JwtPayload);
+    const result = await SubscriptionService.cancelSubscriptionFromDB(req.params.id);
 
     sendResponse(res, {
         statusCode: StatusCodes.OK,
