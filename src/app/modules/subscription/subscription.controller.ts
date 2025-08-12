@@ -27,7 +27,19 @@ const subscriptionDetails = catchAsync( async(req: Request, res: Response)=>{
     })
 });
 
+const cancelSubscription = catchAsync( async(req: Request, res: Response)=>{
+    const result = await SubscriptionService.cancelSubscriptionFromDB(req.user as JwtPayload);
+
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Subscription Cancel Successfully",
+        data: result
+    })
+});
+
 export const SubscriptionController = {
     subscriptions,
-    subscriptionDetails
+    subscriptionDetails,
+    cancelSubscription
 }

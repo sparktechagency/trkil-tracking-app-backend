@@ -4,6 +4,9 @@ import { Subscription } from "./subscription.model";
 import stripe from "../../../config/stripe";
 import { User } from "../user/user.model";
 import QueryBuilder from "../../../helpers/QueryBuilder";
+import { IUser } from "../user/user.interface";
+import ApiError from "../../../errors/ApiErrors";
+import { StatusCodes } from "http-status-codes";
 
 
 const subscriptionDetailsFromDB = async (user: JwtPayload): Promise<ISubscription | {}> => {
@@ -24,6 +27,22 @@ const subscriptionDetailsFromDB = async (user: JwtPayload): Promise<ISubscriptio
     }
 
     return subscription;
+};
+
+const cancelSubscriptionFromDB = async (user: JwtPayload): Promise<IUser> => {
+
+    const unSubscribe = await User.findByIdAndUpdate(
+        {_id: user.id},
+        {$set: {isSubscribed : false}},
+        {new : true}
+    )
+
+    await Subscription.findOneAndUpdate({user: user.id}, {status : "cancel"}, {new: true})
+
+    if(!unSubscribe){
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to do")
+    }
+    return unSubscribe;
 };
 
 const subscriptionsFromDB = async (query: Record<string, unknown>): Promise<{ subscriptions: ISubscription[], pagination: any }> => {
@@ -49,5 +68,6 @@ const subscriptionsFromDB = async (query: Record<string, unknown>): Promise<{ su
 
 export const SubscriptionService = {
     subscriptionDetailsFromDB,
-    subscriptionsFromDB
+    subscriptionsFromDB,
+    cancelSubscriptionFromDB
 }

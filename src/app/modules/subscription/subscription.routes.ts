@@ -4,10 +4,15 @@ import { USER_ROLES } from "../../../enums/user";
 import { SubscriptionController } from "./subscription.controller";
 const router = express.Router();
 
-router.get("/", 
-    auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN), 
-    SubscriptionController.subscriptions
-);
+router.route("/")
+    .get(
+        auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN), 
+        SubscriptionController.subscriptions
+    )
+    .patch(
+        auth(USER_ROLES.USER), 
+        SubscriptionController.cancelSubscription
+    )
 
 router.get("/my-plan", 
     auth(USER_ROLES.USER), 
