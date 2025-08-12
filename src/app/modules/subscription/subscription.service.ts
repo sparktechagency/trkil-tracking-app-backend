@@ -30,6 +30,7 @@ const subscriptionDetailsFromDB = async (user: JwtPayload): Promise<ISubscriptio
 };
 
 const cancelSubscriptionFromDB = async (user: JwtPayload): Promise<IUser> => {
+    console.log(user);
 
     const unSubscribe = await User.findByIdAndUpdate(
         {_id: user.id},
