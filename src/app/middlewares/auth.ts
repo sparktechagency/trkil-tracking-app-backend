@@ -11,8 +11,6 @@ const auth = (...roles: string[]) => async (req: Request, res: Response, next: N
         if (!tokenWithBearer) {
             throw new ApiError(StatusCodes.UNAUTHORIZED, 'You are not authorized');
         }
-
-        console.log(tokenWithBearer);
   
         if (tokenWithBearer && tokenWithBearer.startsWith('Bearer')) {
             const token = tokenWithBearer.split(' ')[1];
