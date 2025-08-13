@@ -15,7 +15,7 @@ router.route("/")
     .post(
         auth(USER_ROLES.USER),
         async (req: Request, res: Response, next: NextFunction) => {
-            
+
             try {
 
                 const { delivery_charge, price, ...otherPayload } = req.body;
@@ -23,7 +23,7 @@ router.route("/")
 
 
                 const cart = await Cart.find({ user: req.user.id });
-                
+
                 if (!cart || cart.length === 0) {
                     throw new ApiError(StatusCodes.BAD_REQUEST, "No cart found for this user");
                 }
