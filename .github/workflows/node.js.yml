@@ -38,7 +38,7 @@ jobs:
           if pm2 describe server > /dev/null; then
             pm2 restart server --update-env
           else
-            pm2 start yarn --name server -- run start
+            pm2 start yarn --name server -- run dev
           fi
 
       - name: Save PM2 process list
