@@ -11,6 +11,7 @@ import ApiError from "../../../errors/ApiErrors";
 import { StatusCodes } from "http-status-codes";
 const router = express.Router();
 
+
 router.route("/")
     .post(
         auth(USER_ROLES.USER),
@@ -54,13 +55,20 @@ router.route("/")
     .get(
         auth(USER_ROLES.USER),
         OrderController.retrievedOrders
+    )
+    .put(
+        auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+        OrderController.changeStatus
     );
 
+router.get("/all-orders",
+    auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+    OrderController.orderList
+);
 
-router.route("/:id")
-    .get(
-        auth(USER_ROLES.USER),
-        OrderController.retrievedOrderDetails
-    );
+router.get("/:id",
+    auth(USER_ROLES.USER),
+    OrderController.retrievedOrderDetails
+);
 
 export const OrderRoutes = router;

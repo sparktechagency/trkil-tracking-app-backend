@@ -17,7 +17,7 @@ const createBannerToDB = async (payload: IBanner): Promise<IBanner> => {
 };
 
 const getAllBannerFromDB = async (): Promise<IBanner[]> => {
-  return await Banner.find({});
+  return await Banner.find({}).populate("product", "name").lean();
 };
 
 const updateBannerToDB = async (

@@ -14,6 +14,11 @@ router.get(
     UserController.getUserProfile
 );
 
+router.get('/all-users',
+    auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+    UserController.users
+);
+
 router
     .route('/')
     .post(
@@ -39,7 +44,7 @@ router
 
 router.post(
     '/change-password',
-    auth(USER_ROLES.ADMIN, USER_ROLES.USER),
+    auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.USER),
     // validateRequest(createChangePasswordZodValidationSchema),
     UserController.changePassword
 );

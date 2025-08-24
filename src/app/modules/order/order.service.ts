@@ -2,7 +2,7 @@ import { JwtPayload } from "jsonwebtoken";
 import { IOrder } from "./order.interface";
 import { StatusCodes } from "http-status-codes";
 import ApiError from "../../../errors/ApiErrors";
-import mongoose from "mongoose";
+import mongoose, { FilterQuery } from "mongoose";
 import { Order } from "./order.model";
 import QueryBuilder from "../../../helpers/QueryBuilder";
 import { checkMongooseIDValidation } from "../../../shared/checkMongooseIDValidation";
@@ -62,9 +62,6 @@ const createOrderToDB = async (payload: IOrder) => {
     }
 };
 
-
-
-
 const retrievedOrdersFromDB = async (user: JwtPayload, query: Record<string, any>): Promise<{ orders: IOrder[], pagination: any }> => {
 
     const result = new QueryBuilder(
@@ -94,8 +91,47 @@ const orderDetailsToDB = async (id: string): Promise<IOrder> => {
     return order as IOrder;
 }
 
+
+const ordersFromDB = async (query: FilterQuery<any>): Promise<{ orders: IOrder[], pagination: any }> => {
+
+    const ordersQuery = new QueryBuilder(
+        Order.find(),
+        query
+    ).paginate().filter().search(["txid", "status"]);
+
+    const [orders, pagination] = await Promise.all([
+        ordersQuery.queryModel.populate({
+            path : "items",
+            populate: "product"
+        }).populate("user").lean().exec(),
+        ordersQuery.getPaginationInfo()
+    ]);
+
+    return { orders, pagination };
+}
+
+const statusToDB = async (id: string, status: string): Promise<IOrder> => {
+
+    checkMongooseIDValidation(id, "Order")
+
+    const order = await Order.findByIdAndUpdate(
+        { _id: id },
+        { $set : {status} },
+        { new: true }
+    )
+
+    if (!order) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to update order status");
+    }
+
+    return order as IOrder;
+}
+
+
 export const OrderService = {
     createOrderToDB,
     retrievedOrdersFromDB,
     orderDetailsToDB,
+    ordersFromDB,
+    statusToDB
 }

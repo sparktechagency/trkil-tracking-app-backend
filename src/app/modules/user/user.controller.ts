@@ -62,10 +62,23 @@ const changePassword = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const users = catchAsync(async (req: Request, res: Response) => {
+    const result = await UserService.usersFromDB(req.query);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Users retrieved successfully',
+        data: result,
+        pagination: result.pagination
+    });
+});
+
 export const UserController = { 
     createUser, 
     getUserProfile, 
     updateProfile,
     deleteUser,
-    changePassword
+    changePassword,
+    users
 };

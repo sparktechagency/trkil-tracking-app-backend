@@ -11,6 +11,7 @@ import unlinkFile from "../../../shared/unlinkFile";
 import { IChangePassword } from "../../../types/auth";
 import bcrypt from 'bcrypt';
 import config from "../../../config";
+import QueryBuilder from "../../../helpers/QueryBuilder";
 
 
 const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
@@ -75,19 +76,19 @@ const updateProfileToDB = async (user: JwtPayload, payload: Partial<IUser>): Pro
 };
 
 
-const changePasswordToDB = async ( user: JwtPayload, payload: IChangePassword) => {
+const changePasswordToDB = async (user: JwtPayload, payload: IChangePassword) => {
 
     const { currentPassword, newPassword, confirmPassword } = payload;
     const isExistUser = await User.findById(user.id).select('+password');
     if (!isExistUser) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
     }
-  
+
     //current password match
-    if ( currentPassword && !(await User.isMatchPassword(currentPassword, isExistUser.password))) {
+    if (currentPassword && !(await User.isMatchPassword(currentPassword, isExistUser.password))) {
         throw new ApiError(StatusCodes.BAD_REQUEST, 'Password is incorrect');
     }
-  
+
     //newPassword and current password
     if (currentPassword === newPassword) {
         throw new ApiError(StatusCodes.BAD_REQUEST, 'Please give different password from current password');
@@ -95,12 +96,12 @@ const changePasswordToDB = async ( user: JwtPayload, payload: IChangePassword) =
 
     //new password and confirm password check
     if (newPassword !== confirmPassword) {
-        throw new ApiError( StatusCodes.BAD_REQUEST, "Password and Confirm password doesn't matched");
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Password and Confirm password doesn't matched");
     }
-  
+
     //hash password
-    const hashPassword = await bcrypt.hash( newPassword, Number(config.bcrypt_salt_rounds));
-  
+    const hashPassword = await bcrypt.hash(newPassword, Number(config.bcrypt_salt_rounds));
+
     const updateData = {
         password: hashPassword,
     };
@@ -112,7 +113,7 @@ const changePasswordToDB = async ( user: JwtPayload, payload: IChangePassword) =
 const deleteUserFromDB = async (user: JwtPayload, password: string) => {
 
     console.log(user)
-    if(!password){
+    if (!password) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid Password")
     }
 
@@ -133,11 +134,31 @@ const deleteUserFromDB = async (user: JwtPayload, password: string) => {
     return;
 };
 
+const usersFromDB = async (query: Record<string, unknown>): Promise<{ users: IUser[], pagination: any }> => {
+
+    const result = new QueryBuilder(
+        User.find({ role: "USER" }),
+        query
+    )
+        .paginate()
+        .filter()
+        .search(['name', 'email']);
+
+    const [users, pagination] = await Promise.all([
+        result.queryModel.lean().exec(),
+        result.getPaginationInfo()
+    ]);
+
+    return { users, pagination };
+}
+
+
 
 export const UserService = {
     createUserToDB,
     getUserProfileFromDB,
     updateProfileToDB,
     changePasswordToDB,
-    deleteUserFromDB
+    deleteUserFromDB,
+    usersFromDB
 };
